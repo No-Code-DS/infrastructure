@@ -1,0 +1,16 @@
+name: Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Test of input'
+        required: true
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Test: ${{ inputs.test }}"
