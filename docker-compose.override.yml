@@ -12,3 +12,10 @@ services:
     volumes:
       - $ENGINE_PATH/engine:/code/engine
     restart: on-failure
+
+  frontend:
+    build:
+      context: $FRONTEND_PATH 
+      target: development
+    volumes:
+      - $FRONTEND_PATH:/app

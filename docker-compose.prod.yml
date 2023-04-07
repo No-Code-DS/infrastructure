@@ -2,3 +2,6 @@ services:
   engine:
     image: ghcr.io/no-code-ds/core-engine:latest
     command: bash -c "alembic upgrade head && uvicorn engine.main:app --host 0.0.0.0 --port 80"
+
+  frontend:
+    image: ghcr.io/no-code-ds/core-engine:latest
