@@ -1,4 +1,3 @@
-# Use postgres/example user/password credentials
 version: '3.9'
 
 services:
@@ -23,10 +22,16 @@ services:
       PGADMIN_LISTEN_PORT: 5050
   
   engine:
-    ports: 
-      - "80:80"
+    image: ghcr.io/no-code-ds/core-engine:latest
+    command: bash -c "alembic upgrade head && uvicorn engine.main:app --host 0.0.0.0 --port 80 --reload"
+    ports:
+      - "8000:80"
     depends_on:
       - db
     environment:
       SQLALCHEMY_DATABASE_URL: "postgresql://admin:admin@db/nocodedb"
     
+  frontend:
+    image: ghcr.io/no-code-ds/frontend:latest
+    environment:
+      BACKEND_URL: "engine"
