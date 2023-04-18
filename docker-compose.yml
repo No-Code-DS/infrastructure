@@ -20,6 +20,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_LISTEN_PORT: 5050
+    volumes:
+      - pgadmin:/var/lib/pgadmin
   
   engine:
     image: ghcr.io/no-code-ds/core-engine:latest
@@ -33,5 +35,10 @@ services:
     
   frontend:
     image: ghcr.io/no-code-ds/frontend:latest
+    ports:
+      - "80:80"
     environment:
       BACKEND_URL: "engine"
+
+volumes:
+  pgadmin:
