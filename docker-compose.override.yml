@@ -1,20 +1,30 @@
 version: '3.9'
 
 services:
+  trainer:
+    image: trainer:local
+    container_name: "trainer"
+    restart: always
+    build:
+      context: $TRAINER_PATH
+    volumes:
+      - $TRAINER_PATH/trainer:/code/trainer
+      - $ENGINE_PATH/upload:/code/upload
+
   engine:
     image: core-engine:local
+    container_name: "engine"
+    restart: always
     build: 
       context: $ENGINE_PATH
-    command: bash -c "alembic upgrade head && uvicorn engine.main:app --host 0.0.0.0 --port 80 --reload"
     volumes:
       - $ENGINE_PATH/engine:/code/engine
+      - $ENGINE_PATH/alembic:/code/alembic
+      - $ENGINE_PATH/upload:/code/upload
 
   frontend:
     image: frontend:local
     build:
       context: $FRONTEND_PATH 
-      target: development
-    ports:
-      - "3000:3000"
     volumes:
       - $FRONTEND_PATH/src:/app/src

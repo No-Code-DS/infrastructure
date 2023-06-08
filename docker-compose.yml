@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_DB: nocodedb
     volumes:
-     - /var/lib/postgresql/data:/var/lib/postgresql/data
+     - psgstore:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
@@ -22,19 +22,45 @@ services:
       PGADMIN_LISTEN_PORT: 5050
     volumes:
       - pgadmin:/var/lib/pgadmin
-  
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - rabbitmq:/var/lib/rabbitmq/
+        - rabbitmq:/var/log/rabbitmq
+
+  trainer:
+    image: ghcr.io/no-code-ds/trainer:latest
+    depends_on:
+      - rabbitmq
+    command: bash -c "cd trainer && python -u consumer.py"
+    environment:
+      RABBIT_URL: "rabbitmq"
+      SQLALCHEMY_DATABASE_URL: "postgresql://admin:admin@db/nocodedb"
+    volumes:
+      - filestore:/code/upload
+
   engine:
     image: ghcr.io/no-code-ds/core-engine:latest
-    command: bash -c "alembic upgrade head && uvicorn engine.main:app --host 0.0.0.0 --port 80 --reload"
-    ports:
-      - "8000:80"
     depends_on:
       - db
+    ports:
+      - 8000:8000
+    command: bash -c "alembic upgrade head && uvicorn engine.main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
       SQLALCHEMY_DATABASE_URL: "postgresql://admin:admin@db/nocodedb"
-    
+      RABBIT_URL: "rabbitmq"
+    volumes:
+      - filestore:/code/upload
+
   frontend:
     image: ghcr.io/no-code-ds/frontend:latest
+    depends_on:
+      - engine
     ports:
       - "80:80"
     environment:
@@ -42,3 +68,6 @@ services:
 
 volumes:
   pgadmin:
+  rabbitmq:
+  psgstore:
+  filestore:
